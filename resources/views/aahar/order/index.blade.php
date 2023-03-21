@@ -460,7 +460,7 @@
                             `<option value="${item.id}">${item.item_name}</option>`
                     })
                     // console.log(options);
-                    $('select[name="item[]"]').append(options) // Updated selector
+                    $('select[name="item[]"]').html(options) // Updated selector
                 }
             })
         })
