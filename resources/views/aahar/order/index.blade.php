@@ -44,8 +44,8 @@
                     @if ($message = Session::get('error'))
                         <span style="color: red">{{ $message }}</span>
                     @endif
-                    <h1 class="btn btn-primary newOrder">Create A new Order</h1>
-                    <h1 class="btn btn-info oldOrder">Choose Event for Creating Order</h1>
+                    <h1 class="btn btn-primary newOrder">Create Order For New Event</h1>
+                    <h1 class="btn btn-info oldOrder">Create Order For Existing Event</h1>
 
 
                 </div>
@@ -197,7 +197,8 @@
                                     <th style="font-size: 15px">Number of Veg</th>
                                     <td>
                                         <input type="text" name="number_of_veg" class="form-control"
-                                            value="{{ old('number_of_veg') }}" placeholder="number of vegetarian ">
+                                            value="{{ old('number_of_veg') }}"
+                                            placeholder="number of vegetarian optional">
                                     </td>
                                 </tr>
                                 <tr colspan="3">
@@ -217,7 +218,7 @@
                                     <tr>
                                         <td class="wt">
                                             <select name="item_category[]" id="item_category_1"
-                                                class="form-control item_category">
+                                                class="form-control item_category itemCat">
                                                 <option value="">Select One</option>
                                                 @foreach ($category as $i)
                                                     <option value="{{ $i->id }}">{{ $i->name }}</option>
@@ -227,9 +228,9 @@
                                         <td class="wt">
                                             <select name="item[]" id="item_1" class="form-control item mselect"
                                                 onChange="itmVal(1)" multiple>
-                                                @foreach ($item as $i)
+                                                {{-- @foreach ($item as $i)
                                                     <option value="{{ $i->id }}">{{ $i->item_name }}</option>
-                                                @endforeach
+                                                @endforeach --}}
                                             </select>
                                             <input type="hidden" name="item_hidden[]" id="item_hidden_1">
                                         </td>
@@ -436,6 +437,31 @@
             })
             $('.oldOrder').on('click', function() {
                 $('#button').hide()
+            })
+        })
+        $(document).on('change', '.itemCat', function() {
+            $('#opCat').append(
+                '<option value="1">Option 1</option>');
+            let catID = $(this).val()
+            $.ajax({
+                url: "{{ route('selectItem') }}",
+                type: "POST",
+                data: {
+                    cat_id: catID,
+                    _token: '{{ csrf_token() }}'
+                },
+                dataType: 'json',
+                success: function(res) {
+                    let catItem = res
+                    let options = ''
+
+                    catItem.forEach((item) => {
+                        options +=
+                            `<option value="${item.id}">${item.item_name}</option>`
+                    })
+                    // console.log(options);
+                    $('select[name="item[]"]').append(options) // Updated selector
+                }
             })
         })
     </script>
