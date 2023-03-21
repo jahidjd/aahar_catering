@@ -38,7 +38,7 @@ class EventController extends Controller
             'event_name'=>'required',
             'event_date'=>'required',
             'address'=>'required',
-            'phone'=>'required',
+            'phone'=>'required|numeric|digits:10',
             'email'=>'required',
             'party_name'=>'required',
             'organized_by'=>'required',
