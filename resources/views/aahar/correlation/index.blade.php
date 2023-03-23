@@ -3,6 +3,7 @@
     <div class="page-container">
         @php
             $order = $data;
+            $order_ids = $order_ids;
         @endphp
 
         {{-- side menu --}}
@@ -56,12 +57,12 @@
                                     $item_all = \App\Models\Item::whereIn('id', $itms)->get();
                                 @endphp
                                 <tr>
-                                    <td>
+                                    <td width="20%">
                                         <input type="hidden" name="category_id[]" id="category_id_{{ $k + 1 }}"
                                             value="{{ $item['category_id'] ?? '' }}">
                                         {{ $category->name ?? '' }}
                                     </td>
-                                    <td>
+                                    <td width="40%">
                                         @foreach ($item_all as $key => $val)
                                             {{ $loop->first ? '' : ', ' }}
                                             <input type="hidden" name="item_id[]" id="item_id_{{ $k + 1 }}"
@@ -69,14 +70,17 @@
                                             {{ $val->item_name ?? '' }}
                                         @endforeach
                                     </td>
-                                    <td>
+                                    <td width="40%">
                                         <input type="text" name="ratio[]" id="ratio_{{ $k + 1 }}"
                                             class="form-control" placeholder="Enter Ratio">
                                     </td>
                                 </tr>
                             @endforeach
                             <tr>
-                                <td colspan="3" class="text-right"><input type="submit" class="btn btn-primary"></td>
+                                <td colspan="3" class="text-right">
+                                    <input type="hidden" name="order_ids" value="{{$order_ids ?? ''}}">
+                                    <input type="submit" class="btn btn-primary">
+                                </td>
                             </tr>
                         </table>
                     </form>

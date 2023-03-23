@@ -38,33 +38,60 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
+        $itms = array_unique($request->item_hidden);
+        $unique = array();
+
+        foreach ($itms as $value)
+        {
+            $unique[] = $value;
+        }
         
+        $itms_val = array_values($unique);
         $item_category = $request->item_category;
         $data = array();
         
         foreach($item_category as $key => $value)
         {
-            if(!empty($value))
-            {
-                $data[] =[
-                    'item_id' => $request->item_hidden[$key],
-                    'category_id' => $request->item_category[$key],
-                    'party_name' => $request->party_name,
-                    'menu_name' => $request->menu_name,
-                    'number_of_attendees' => $request->number_of_attendees,
-                    'number_of_veg' => $request->number_of_veg,
-                ];                 
+            $checker = Correlation::where(['category_id' => $request->item_category[$key], 'item_id' => $itms_val[$key]])->first();
+            $itms_arr = explode(',', $itms_val[$key]);
+            $item_all = Item::whereIn('id', $itms_arr)->get('avg_per_head_qunatity');
+            $avg_qty = array();
 
+            foreach ($item_all as $value)
+            {
+                $avg_qty[] = $value->avg_per_head_qunatity;
+            }
+            
+            $avg_qty_arr = array_values($avg_qty);
+            $avg_qty_val = implode(',', $avg_qty_arr);
+
+            if($checker == null){
+                if(!empty($value))
+                {
+                    $data[] =[
+                        'item_id' => $request->item_hidden[$key],
+                        'category_id' => $request->item_category[$key],
+                        'party_name' => $request->party_name,
+                        'menu_name' => $request->menu_name,
+                        'number_of_attendees' => $request->number_of_attendees,
+                        'number_of_veg' => $request->number_of_veg,
+                        'original_per_head_qunatity' => $avg_qty_val,
+                        'effective_per_head_qunatity' => NULL,
+                    ];                 
+                }
             }
         }
 
         Order::insert($data);
+
+        $lastId = Order::orderByDesc('id')->first()->id;
+        $ids = range($lastId - count($data) + 1, $lastId);
+        $order_ids = implode(',', $ids);
    
         if(count($data) > 0){
-            return view('aahar.correlation.index',compact('data'))->with('success','Your Given Item Added Successfully!');
+            return view('aahar.correlation.index',compact('data','order_ids'))->with('success','Your Given Item Added Successfully!');
         }else{
-            return redirect('/order')->back()->with('error','Something Wrong!');
+            return redirect('/order')->back()->with('error','Something went Wrong!');
         }
     }
 
@@ -101,7 +128,6 @@ class OrderController extends Controller
     }
 
     public function addCorrelation(Request $request){
-        // dd($request->all());
         $itms = array_unique($request->item_id);
 
         $unique = array();
@@ -117,28 +143,31 @@ class OrderController extends Controller
         
         foreach($category_val as $key => $value)
         {
-            $checker = Correlation::where(['category_id' => $request->category_id[$key], 'item_id' => $itms_val[$key]])->first();
-            
-            if($checker == null){
-                if(!empty($value))
-                {
-                        $data[] =[
-                            'category_id' => $request->category_id[$key],
-                            'item_id' => $itms_val[$key],
-                            'ratio' => $request->ratio[$key],
-                        ];                 
+            if(!empty($value))
+            {
+                $data[] =[
+                    'category_id' => $request->category_id[$key],
+                    'item_id' => $itms_val[$key],
+                    'ratio' => $request->ratio[$key],
+                ];                 
+            }
 
-                }
+            $order_ids_arr = explode(',', $request->order_ids);
+
+            foreach($order_ids_arr as $key=>$id){
+                Order::where('id',$id)->update([
+                    'effective_per_head_qunatity' => $request->ratio[$key],
+                ]);
             }
         }
 
         Correlation::insert($data);
         
-     if(count($data) > 0){
+        if(count($data) > 0){
             $request->session()->forget('eventAdded');
             return redirect()->route('order.index')->with('success','Food Correlation Added Successfully!');
         }else{
-            return redirect('/addCorrelation')->back()->with('error','Food Correlation Already Exists!');
+            return redirect('/addCorrelation')->back()->with('error','Something went Wrong!');
         }  
     }
 

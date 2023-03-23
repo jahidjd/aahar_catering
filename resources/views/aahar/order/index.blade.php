@@ -1,5 +1,13 @@
 @extends('aahar.layout.layout')
 @section('body')
+    <style type="text/css">
+        select[multiple] option:checked {
+            background: blue linear-gradient(0deg, blue 0%, blue 100%);
+            margin-bottom: 5px;
+            padding:3px;
+            color: white;
+        }
+    </style>
     <div class="page-container">
         {{-- side menu --}}
         @include('aahar.header.menu')
@@ -218,7 +226,7 @@
                                     <tr>
                                         <td class="wt">
                                             <select name="item_category[]" id="item_category_1"
-                                                class="form-control item_category itemCat">
+                                                class="form-control item_category" onChange="itmCatVal(1)">
                                                 <option value="">Select One</option>
                                                 @foreach ($category as $i)
                                                     <option value="{{ $i->id }}">{{ $i->name }}</option>
@@ -228,9 +236,6 @@
                                         <td class="wt">
                                             <select name="item[]" id="item_1" class="form-control item mselect"
                                                 onChange="itmVal(1)" multiple>
-                                                {{-- @foreach ($item as $i)
-                                                    <option value="{{ $i->id }}">{{ $i->item_name }}</option>
-                                                @endforeach --}}
                                             </select>
                                             <input type="hidden" name="item_hidden[]" id="item_hidden_1">
                                         </td>
@@ -400,11 +405,11 @@
                 })
 
                 newdiv.innerHTML = '<td class="wt"><select name="item_category[]" id="item_category_' + count +
-                    '" class="form-control item_category_' + count + '"> ' + option2 +
+                    '" class="form-control item_category_' + count + '" onChange="itmCatVal(' + count +
+                    ')"> <option value="">Select One</option> ' + option2 +
                     ' </select></td><td class="wt"><select name="item[]" id="item_' + count +
                     '" class="form-control mselect item_' + count + '" onChange="itmVal(' + count +
-                    ')" multiple> <option value="">Select One</option>' + option +
-                    '</select><input type="hidden" name="item_hidden[]" id="item_hidden_' + count +
+                    ')" multiple></select><input type="hidden" name="item_hidden[]" id="item_hidden_' + count +
                     '"></td><td class="text-right"><button class="btn btn-danger" type="button" value="Delete" onclick="deleteOrderRow(this)">Delete</button></td>';
                 document.getElementById(divName).appendChild(newdiv);
                 count++;
@@ -427,6 +432,30 @@
             var itms = $('#item_' + val).val();
             $("#item_hidden_" + val).val(itms);
         }
+
+        function itmCatVal(val) {
+            var catID = $('#item_category_'+val).val();
+            $.ajax({
+                url: "{{ route('selectItem') }}",
+                type: "POST",
+                data: {
+                    cat_id: catID,
+                    _token: '{{ csrf_token() }}'
+                },
+                dataType: 'json',
+                success: function(res) {
+                    var itms = "";
+                    res.forEach((element) => {
+                        itms += '<option value="' + element.id + '">' + element.item_name + "</option>"
+                    })
+                    if(itms != ''){
+                        $('#item_'+val).html(itms);
+                    }else{
+                        $('#item_'+val).html('<option style="color:red;">No Item Found!</option>');
+                    }
+                }
+            })
+        }
     </script>
     <script>
         $(document).ready(function() {
@@ -437,31 +466,6 @@
             })
             $('.oldOrder').on('click', function() {
                 $('#button').hide()
-            })
-        })
-        $(document).on('change', '.itemCat', function() {
-            $('#opCat').append(
-                '<option value="1">Option 1</option>');
-            let catID = $(this).val()
-            $.ajax({
-                url: "{{ route('selectItem') }}",
-                type: "POST",
-                data: {
-                    cat_id: catID,
-                    _token: '{{ csrf_token() }}'
-                },
-                dataType: 'json',
-                success: function(res) {
-                    let catItem = res
-                    let options = ''
-
-                    catItem.forEach((item) => {
-                        options +=
-                            `<option value="${item.id}">${item.item_name}</option>`
-                    })
-                    // console.log(options);
-                    $('select[name="item[]"]').html(options) // Updated selector
-                }
             })
         })
     </script>
