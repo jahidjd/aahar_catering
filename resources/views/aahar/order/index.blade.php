@@ -52,7 +52,7 @@
                     @if ($message = Session::get('error'))
                         <span style="color: red">{{ $message }}</span>
                     @endif
-                    <h1 class="btn btn-primary newOrder">Create Order For New Event</h1>
+                    <h1 class="btn btn-primary newOrder">Create Order for new event</h1>
                     <h1 class="btn btn-info oldOrder">Create Order For Existing Event</h1>
 
 
@@ -102,7 +102,7 @@
                                 </th>
                             </tr>
                             <tr>
-                                <th style="font-size: 15px">Phone</th>
+                                <th style="font-size: 15px">Mobile</th>
                                 <th style="font-size: 15px"><input type="text" name="phone" class="form-control"
                                         value="{{ old('phone') }}" placeholder="Enter Your Phone Number">
 
@@ -159,7 +159,7 @@
 
 
             @if (Session::get('eventAdded') == 'eventAdded')
-                <div class="main-content-inner">
+                <div class="main-content-inner orderForm">
                     <div class="card col-lg-12 col-md-12 col-xs-12">
                         <h1>Order Form</h1>
                         @if ($message = Session::get('success'))
@@ -205,8 +205,7 @@
                                     <th style="font-size: 15px">Number of Veg</th>
                                     <td>
                                         <input type="text" name="number_of_veg" class="form-control"
-                                            value="{{ old('number_of_veg') }}"
-                                            placeholder="number of vegetarian optional">
+                                            value="{{ old('number_of_veg') }}" placeholder="number of vegetarian ">
                                     </td>
                                 </tr>
                                 <tr colspan="3">
@@ -466,6 +465,7 @@
             })
             $('.oldOrder').on('click', function() {
                 $('#button').hide()
+                $('.orderForm').show()
             })
         })
     </script>
